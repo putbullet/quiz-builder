@@ -21,9 +21,9 @@ echo 3. Clone/Update Quiz Builder from GitHub
 echo 4. Install all requirements
 echo 5. Launch the application
 echo.
-echo Please wait, this may take 5-10 minutes...
+echo Starting installation in 3 seconds...
+timeout /t 3 /nobreak >nul
 echo.
-pause
 
 :: Check and install Git if needed
 echo.
@@ -34,8 +34,10 @@ if errorlevel 1 (
     echo.
     
     :: Download Git installer
-    echo Downloading Git installer (50MB)...
-    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe' -OutFile '%TEMP%\git-installer.exe'"
+    echo.
+    echo Downloading Git installer (50MB) - Please wait...
+    echo This may take 1-2 minutes depending on your internet speed...
+    powershell -Command "Write-Host 'Connecting to GitHub...' -ForegroundColor Cyan; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri 'https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe' -OutFile '%TEMP%\git-installer.exe'; Write-Host 'Download complete!' -ForegroundColor Green"
     
     if not exist "%TEMP%\git-installer.exe" (
         echo ERROR: Failed to download Git installer!
@@ -47,8 +49,11 @@ if errorlevel 1 (
     )
     
     :: Install Git silently
+    echo.
     echo Installing Git (this takes 2-3 minutes)...
+    echo Please wait - installer is running in background...
     start /wait "" "%TEMP%\git-installer.exe" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
+    echo Git installation completed!
     
     :: Add Git to PATH for current session
     set "PATH=%PATH%;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
@@ -78,8 +83,10 @@ if errorlevel 1 (
     echo.
     
     :: Download Python installer
-    echo Downloading Python 3.11 installer (25MB)...
-    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe' -OutFile '%TEMP%\python-installer.exe'"
+    echo.
+    echo Downloading Python 3.11 installer (25MB) - Please wait...
+    echo This may take 1-2 minutes depending on your internet speed...
+    powershell -Command "Write-Host 'Connecting to Python.org...' -ForegroundColor Cyan; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe' -OutFile '%TEMP%\python-installer.exe'; Write-Host 'Download complete!' -ForegroundColor Green"
     
     if not exist "%TEMP%\python-installer.exe" (
         echo ERROR: Failed to download Python installer!
@@ -90,8 +97,11 @@ if errorlevel 1 (
     )
     
     :: Install Python silently with pip and add to PATH
+    echo.
     echo Installing Python (this takes 2-3 minutes)...
+    echo Please wait - installer is running in background...
     start /wait "" "%TEMP%\python-installer.exe" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0 Include_pip=1
+    echo Python installation completed!
     
     :: Refresh PATH
     set "PATH=%PATH%;C:\Program Files\Python311;C:\Program Files\Python311\Scripts"
@@ -125,22 +135,29 @@ echo.
 
 :: Check if directory already exists
 if exist "%REPO_NAME%" (
-    echo Directory "%REPO_NAME%" already exists.
+    echo.
+    echo [STEP 4/7] Directory "%REPO_NAME%" already exists.
     echo Checking for updates from GitHub...
+    echo.
     
     cd "%REPO_NAME%"
     
     :: Fetch latest changes
-    git fetch origin main 2>nul
+    echo Fetching latest changes...
+    git fetch origin main
     
     :: Check if update is available
     git status -uno | find "Your branch is behind" >nul
     if not errorlevel 1 (
+        echo.
         echo New updates available! Pulling latest changes...
+        echo.
         git pull origin main
         if errorlevel 1 (
+            echo.
             echo WARNING: Failed to pull updates. Using existing version.
         ) else (
+            echo.
             echo Repository updated successfully!
         )
     ) else (
@@ -152,14 +169,16 @@ if exist "%REPO_NAME%" (
     :: Clone the repository
     echo.
     echo [STEP 4/7] Cloning repository from GitHub...
+    echo.
     git clone "%REPO_URL%"
     if errorlevel 1 (
-        echo ERROR: Failed to clone repository!
         echo.
+        echo ERROR: Failed to clone repository!
         echo Please check your internet connection and try again.
         pause
         exit /b 1
     )
+    echo.
     echo Repository cloned successfully!
 )
 
@@ -175,9 +194,12 @@ if errorlevel 1 (
 
 :: Create or reuse virtual environment
 if not exist "venv_win" (
+    echo.
     echo Creating virtual environment...
+    echo This may take 30 seconds...
     python -m venv venv_win
     if errorlevel 1 (
+        echo.
         echo ERROR: Failed to create virtual environment!
         echo Make sure Python venv module is installed.
         pause
@@ -202,20 +224,30 @@ echo Virtual environment activated!
 :: Install requirements
 echo.
 echo [STEP 7/7] Installing/Updating requirements...
-echo This may take a few minutes...
-python -m pip install --upgrade pip --quiet
+echo This may take 3-5 minutes...
+echo.
+echo Upgrading pip...
+python -m pip install --upgrade pip
+echo.
+echo Installing Python packages (Flask, pyngrok, etc.)...
+echo.
 python -m pip install -r requirements.txt --upgrade
 if errorlevel 1 (
+    echo.
     echo ERROR: Failed to install requirements!
     pause
     exit /b 1
 )
+echo.
 echo Requirements installed successfully!
 
 :: Create necessary directories
+echo.
+echo Creating necessary directories...
 if not exist "data" mkdir data
 if not exist "results" mkdir results
 if not exist "logs" mkdir logs
+echo Directories ready!
 
 :: Installation complete
 echo.
@@ -223,7 +255,14 @@ echo ============================================================
 echo Installation completed successfully!
 echo ============================================================
 echo.
-echo Launching Quiz Builder...
+echo All requirements satisfied:
+echo - Git: Installed
+echo - Python: Installed
+echo - Repository: Up to date
+echo - Dependencies: Installed
+echo.
+echo Launching Quiz Builder in 3 seconds...
+timeout /t 3 /nobreak >nul
 echo.
 
 :: Launch the application directly
@@ -236,6 +275,12 @@ if errorlevel 1 (
     echo ERROR: Application exited with error code %errorlevel%
     echo ============================================================
     echo.
+    pause
+) else (
+    echo.
+    echo Quiz Builder closed normally.
+    echo.
+    echo To run again: Double-click install.bat or start_quiz_builder.bat
+    echo.
+    timeout /t 5
 )
-
-pause
