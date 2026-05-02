@@ -72,7 +72,7 @@ A complete quiz builder and live exam delivery system designed for educators. Bu
    - Double-click `install.bat`
    - Enter the GitHub repository URL when prompted:
      ```
-     https://github.com/YOUR_USERNAME/quiz-builder
+     https://github.com/putbullet/quiz-builder
      ```
    - Wait for automatic installation (clones repo, installs Python packages, creates folders)
 
@@ -90,7 +90,7 @@ A complete quiz builder and live exam delivery system designed for educators. Bu
 
 1. **Clone or Download** this repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/quiz-builder
+   git clone https://github.com/putbullet/quiz-builder
    cd quiz-builder
    ```
 
